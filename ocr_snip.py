@@ -66,7 +66,6 @@ class OcrSnip(QtWidgets.QWidget):
         self.setWindowFlags(
             QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.FramelessWindowHint
         )
-        print("Capture the screen...")
         self.show()
 
     def paintEvent(self, event):
@@ -76,8 +75,6 @@ class OcrSnip(QtWidgets.QWidget):
         qp.drawRect(QtCore.QRect(self.begin, self.end))
 
     def mousePressEvent(self, event):
-        if event.button() == Qt.MiddleButton:
-            self.close()
         self.begin = event.pos()
         self.end = self.begin
         self.update()
