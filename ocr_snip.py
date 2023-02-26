@@ -28,6 +28,9 @@ def ocr_screenshot(img):
     )
     document = response.full_text_annotation
 
+    if response.text_annotations[0].locale == 'en':
+        return response.text_annotations[0].description
+
     blocks = []
     for page in document.pages:
         for block in page.blocks:
@@ -102,9 +105,12 @@ class OcrSnip(QtWidgets.QWidget):
         img = ImageGrab.grab(bbox=(x1, y1, x2, y2))
         ocr_data = ocr_screenshot(img)
         self.save_debug(img, ocr_data)
-        ocr_text = "\n".join(
-            x["text"] for x in ocr_data if x["confidence"] > CONFIDENCE_FILTER
-        )
+        if not isinstance(ocr_data, str):
+            ocr_text = "\n".join(
+                x["text"] for x in ocr_data if x["confidence"] > CONFIDENCE_FILTER
+            )
+        else:
+            ocr_text = ocr_data
         pyperclip.copy(ocr_text)
         print(ocr_text)
 
