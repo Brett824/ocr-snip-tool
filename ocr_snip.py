@@ -15,43 +15,46 @@ CONFIDENCE_FILTER = 0
 
 
 def ocr_screenshot(img):
-    client = vision.ImageAnnotatorClient()
+    try:
+        client = vision.ImageAnnotatorClient()
 
-    image_bytes = io.BytesIO()
-    img.save(image_bytes, format="PNG")
-    content = image_bytes.getvalue()
+        image_bytes = io.BytesIO()
+        img.save(image_bytes, format="PNG")
+        content = image_bytes.getvalue()
 
-    image = vision.Image(content=content)
+        image = vision.Image(content=content)
 
-    response = client.document_text_detection(
-        image=image, image_context={"language_hints": ["jp"]}
-    )
-    document = response.full_text_annotation
+        response = client.document_text_detection(
+            image=image, image_context={"language_hints": ["jp"]}
+        )
+        document = response.full_text_annotation
 
-    if response.text_annotations[0].locale == 'en':
-        return response.text_annotations[0].description
+        if response.text_annotations[0].locale == 'en':
+            return response.text_annotations[0].description
 
-    blocks = []
-    for page in document.pages:
-        for block in page.blocks:
-            block_info = {}
-            top_left_vertex = block.bounding_box.vertices[0]
-            top_left = (top_left_vertex.x, top_left_vertex.y)
+        blocks = []
+        for page in document.pages:
+            for block in page.blocks:
+                block_info = {}
+                top_left_vertex = block.bounding_box.vertices[0]
+                top_left = (top_left_vertex.x, top_left_vertex.y)
 
-            bottom_right_vertex = block.bounding_box.vertices[2]
-            bottom_right = (bottom_right_vertex.x, bottom_right_vertex.y)
+                bottom_right_vertex = block.bounding_box.vertices[2]
+                bottom_right = (bottom_right_vertex.x, bottom_right_vertex.y)
 
-            block_info["bounding_box"] = [top_left, bottom_right]
-            block_info["confidence"] = block.confidence
-            text_list = []
-            for paragraph in block.paragraphs:
-                for word in paragraph.words:
-                    for symbol in word.symbols:
-                        text_list.append(symbol.text)
-            text = "".join(text_list)
-            block_info["text"] = text
-            blocks.append(block_info)
-    return blocks
+                block_info["bounding_box"] = [top_left, bottom_right]
+                block_info["confidence"] = block.confidence
+                text_list = []
+                for paragraph in block.paragraphs:
+                    for word in paragraph.words:
+                        for symbol in word.symbols:
+                            text_list.append(symbol.text)
+                text = "".join(text_list)
+                block_info["text"] = text
+                blocks.append(block_info)
+        return blocks
+    except:
+        return ""
 
 
 class OcrSnip(QtWidgets.QWidget):
